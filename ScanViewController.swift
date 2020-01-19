@@ -22,11 +22,10 @@ class ScanViewController: UIViewController, BaseViewController, FoodDetailViewCo
     @IBOutlet weak var scanButton: UIButton!
     
     private var scanImage: UIImage? = nil
-    private let viewModel: ImageViewModel = ImageViewModel()
-    private let foodViewModel: FoodViewModel = FoodViewModel()
+//    private let viewModel: ImageViewModel = ImageViewModel()
+    private let viewModel: FoodViewModel = FoodViewModel()
     
     var foodImage: UIImage? = nil
-
     
     var statusScan: Bool = true {
         didSet {
@@ -42,11 +41,13 @@ class ScanViewController: UIViewController, BaseViewController, FoodDetailViewCo
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        statusScan = true
 //        tabBarController?.tabBar.isHidden = true
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        statusScan = false
 //        tabBarController?.tabBar.isHidden = false
     }
     
@@ -64,12 +65,7 @@ extension ScanViewController {
         let ciimage : CIImage = CIImage(cvPixelBuffer: imageBuffer)
         let image : UIImage = convert(ciimage).rotate(radians: .pi/2)
         foodImage = image
-        viewModel.uploadImage(image, path: "scan", onSuccess: { [weak self] (url) in
-            print("\(url)")
-            self?.doCheckFood(name,"\((url))")
-        }) { (error) in
-            
-        }
+        getFoodData(name)
     }
     
     
@@ -82,26 +78,16 @@ extension ScanViewController {
          return image
     }
     
-    // check food
-    private func doCheckFood(_ name: String,_ imageUrl: String) {
-//        for food in foods {
-//           if name == food.name {
-//                /// do something ....
-//            }
-//        }
-        // keep api
-        let parms: [String:Any] = [
-            "user_id" : UserManager.shared.userId!,
-            "image" : imageUrl,
-            "name" : name
-        ]
-        debugPrint(parms)
-        foodViewModel.scanFood(parms, onSuccess: { [weak self] (food) in
+    
+    private func getFoodData(_ name: String) {
+        viewModel.getFood(name, onSuccess: { [weak self] (food) in
             Navigator.shared.showFoodDetailView(self, food: food)
         }) { (error) in
             
         }
     }
+    
+
 }
 
 /// MARK : Camera
