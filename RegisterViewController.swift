@@ -65,7 +65,8 @@ extension RegisterViewController {
     }
     
     @IBAction func navigatorToLogin() {
-        Navigator.shared.navigatorToLogin(self)
+//        Navigator.shared.navigatorToLogin(self)
+        navigationController?.popViewController(animated: true)
     }
     
     @IBAction func register() {
