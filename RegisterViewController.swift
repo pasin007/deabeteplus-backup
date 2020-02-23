@@ -28,6 +28,9 @@ class RegisterViewController: UIViewController, BaseViewController {
     @IBOutlet weak var nameTextfield: UITextField!
     @IBOutlet weak var dateTextfield: UITextField!
     @IBOutlet weak var genderTextfield: UITextField!
+    @IBOutlet weak var phoneTextfield: UITextField!
+    @IBOutlet weak var weightTextfield: UITextField!
+    @IBOutlet weak var heightTextfield: UITextField!
     
     private var viewModel: UserViewModel = UserViewModel()
     
@@ -41,6 +44,9 @@ class RegisterViewController: UIViewController, BaseViewController {
         }
     }
     private var birthdate: String = ""
+    
+    private var selectImage: UIImage? = nil
+    private var imageUrlString: String? = nil
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -59,7 +65,8 @@ extension RegisterViewController {
     }
     
     @IBAction func navigatorToLogin() {
-        Navigator.shared.navigatorToLogin(self)
+//        Navigator.shared.navigatorToLogin(self)
+        navigationController?.popViewController(animated: true)
     }
     
     @IBAction func register() {
@@ -67,20 +74,32 @@ extension RegisterViewController {
             let password = passwordTextfield.text,
             let name = nameTextfield.text,
             let gender = genderTextfield.text,
+            let phone = phoneTextfield.text,
+            let weight = weightTextfield.text,
+            let height = heightTextfield.text,
             !email.trim.isEmpty,
             !password.trim.isEmpty,
             !name.trim.isEmpty,
             !birthdate.trim.isEmpty,
-            !gender.trim.isEmpty else { return }
+            !gender.trim.isEmpty,
+            !phone.trim.isEmpty,
+            !weight.trim.isEmpty,
+            !height.trim.isEmpty
+            else { return }
         
-        let parms: [String:Any] = [
+        var parms: [String:Any] = [
             "email": email,
             "password": password,
-            "name": name,
+            "name": name + " ",
             "gender": gender,
-            "birthdate": birthdate
+            "birthdate": birthdate,
+            "phone" : phone,
+            "weight" : weight,
+            "height" : height
         ]
-        
+        if let image = imageUrlString {
+            parms["image"] = image
+        }
         viewModel.register(parms, onSuccess: { [weak self] (user) in
             UserManager.shared.login(user)
             self?.dismiss(animated: true)
@@ -159,6 +178,7 @@ extension RegisterViewController: UIPickerViewDelegate, UIPickerViewDataSource {
         genderTextfield.text = gender.title
     }
     
+    
     func createGenderPicker() {
         // set delegate & dataSource
         pickerGender.delegate = self
@@ -175,6 +195,7 @@ extension RegisterViewController: UIPickerViewDelegate, UIPickerViewDataSource {
         genderTextfield.inputAccessoryView = toolbar
         genderTextfield.inputView = pickerGender
     }
+    
     
     @objc func done() {
         if genderTextfield.text == "" {

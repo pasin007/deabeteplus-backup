@@ -15,8 +15,12 @@ protocol FoodDetailViewControllerDelegate {
 
 class FoodDetailViewController: UIViewController, BaseViewController {
     
+    
+    //MARK: Properties
     var food: Food!
     var delegate: FoodDetailViewControllerDelegate!
+    
+    var foodImageUrl: String = ""
     
     @IBOutlet weak var nameLabel: UILabel!
     @IBOutlet weak var proteinLabel: UILabel!
@@ -26,7 +30,10 @@ class FoodDetailViewController: UIViewController, BaseViewController {
     @IBOutlet weak var fatLabel: UILabel!
     
     @IBOutlet weak var foodImageView: UIImageView!
+    private let imageViewModel: ImageViewModel = ImageViewModel()
+    private let foodViewModel: FoodViewModel = FoodViewModel()
     
+    //MARK: Life Cycles
     override func viewDidLoad() {
         super.viewDidLoad()
         initView()
@@ -35,7 +42,50 @@ class FoodDetailViewController: UIViewController, BaseViewController {
 
 }
 
-/// MARK: Pass Data form delegate
+
+// MARK: Function
+extension FoodDetailViewController {
+    @IBAction func doClose() {
+        dismiss(animated: true) { [weak self] in
+            self?.delegate.statusScan = true
+        }
+    }
+    
+    @IBAction func doEat() {
+        uploadImage(food.name)
+    }
+    
+    @IBAction func dontEat() {
+        dismissView()
+    }
+    
+    private func uploadImage(_ name: String) {
+        guard let image = foodImageView.image else { return }
+        imageViewModel.uploadImage(image, path: "scan", onSuccess: { [weak self] (url) in
+            print(url.absoluteString)
+            self?.doSaveScanHistory(name,url.absoluteString)
+            
+        }) { (error) in
+                
+        }
+    }
+    
+    private func doSaveScanHistory(_ name: String,_ imageUrl: String) {
+        let parms: [String:Any] = [
+            "user_id" : UserManager.shared.userId!,
+            "image" : imageUrl,
+            "name" : name
+        ]
+//        debugPrint(parms)
+        foodViewModel.scanFood(parms, onSuccess: { (food) in
+            print(food)
+        }) { (error) in
+                
+        }
+    }
+}
+
+// MARK: Pass Data form delegate
 extension FoodDetailViewController {
     private func initView() {
         nameLabel.text = "name : " + food.name
@@ -46,15 +96,6 @@ extension FoodDetailViewController {
         fatLabel.text = "fat : \(food.fat) กรัม"
         
         foodImageView.image = delegate.foodImage
-    }
+}
 }
 
-
-/// MARK: Function
-extension FoodDetailViewController {
-    @IBAction func doClose() {
-        dismiss(animated: true) { [weak self] in
-            self?.delegate.statusScan = true
-        }
-    }
-}
